@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pix-tts-wav
+    env: python
+    plan: free
+
+    buildCommand: |
+      apt-get update && apt-get install -y ffmpeg
+      pip install -r requirements.txt
+
+    startCommand: gunicorn app:app -b 0.0.0.0:10000
+
+    envVars:
+      - key: PORT
+        value: 10000
