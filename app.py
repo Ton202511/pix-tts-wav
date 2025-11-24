@@ -1,13 +1,15 @@
-import os, time, json, threading, hashlib
+import os, hashlib
 from flask import Flask, request, jsonify, send_from_directory
 from gtts import gTTS
 from pydub import AudioSegment
 
 app = Flask(__name__)
 
+# Diretório de áudios
 AUDIO_DIR = "audios"
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
+# Helpers
 def frase_pix(nome, valor):
     return f"PIX recebido de {nome}, valor {valor}."
 
@@ -29,12 +31,13 @@ def gerar_audio(nome, valor):
         os.remove(temp_mp3)
     return audio_id, f"/audio/{audio_id}.wav"
 
+# Endpoints
 @app.route("/tts", methods=["POST"])
 def tts():
     d = request.get_json(force=True)
-    nome, valor = d.get("nome",""), d.get("valor_texto","")
+    nome, valor = d.get("nome", ""), d.get("valor_texto", "")
     if not nome or not valor:
-        return jsonify({"error":"faltam campos"}), 400
+        return jsonify({"error": "faltam campos"}), 400
     audio_id, audio_url = gerar_audio(nome, valor)
     return jsonify({"audio_id": audio_id, "audio_url": audio_url})
 
@@ -42,9 +45,9 @@ def tts():
 def audio(audio_id):
     path = wav_path(audio_id)
     if not os.path.exists(path):
-        return jsonify({"error":"not_found"}), 404
+        return jsonify({"error": "not_found"}), 404
     return send_from_directory(AUDIO_DIR, f"{audio_id}.wav", mimetype="audio/wav")
 
 @app.route("/health")
 def health():
-    return jsonify({"status":"ok"})
+    return jsonify({"status": "ok"})
